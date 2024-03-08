@@ -5,8 +5,7 @@ LCD::LCD()
     this->displayLCD = new LiquidCrystal_I2C(LCD_ADDR, LCD_COLS, LCD_ROWS);
     displayLCD->init();
 
-    displayLCD->backlight();
-    displayLCD->noDisplay();
+    this->displayOn();
 }
 
 void LCD::displayOn()
@@ -25,6 +24,15 @@ void LCD::displayOff()
 void LCD::displayClear()
 {
     displayLCD->clear();
+}
+
+void LCD::clearLine(int line)
+{
+    displayLCD->setCursor(0, line);
+    for(int i = 0; i <= LCD_COLS - 1; i++)
+    {
+        displayLCD->print(" ");
+    }
 }
 
 void LCD::WriteOnLine(String msg, int line)
