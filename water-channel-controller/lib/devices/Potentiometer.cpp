@@ -1,5 +1,4 @@
-#include <Potentiometer.h>
-#include "Arduino.h"
+#include "Potentiometer.h"
 
 Potentiometer::Potentiometer(int pin)
 {
