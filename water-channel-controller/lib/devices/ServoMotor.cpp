@@ -23,5 +23,5 @@ void ServoMotor::openDegrees(int degrees)
 
 void ServoMotor::openPercent(int percentage)
 {
-    servo.write(map(percentage, 0, 100, 0, 360));
+    servo.write(map(percentage, 0, 100, 0, 180));
 }
