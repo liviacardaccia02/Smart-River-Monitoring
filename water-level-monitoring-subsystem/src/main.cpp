@@ -1,14 +1,28 @@
 #include <Arduino.h>
+#include <Sonar.h>
+#include <Led.h>
 
-void setup() {
-  Serial.begin(9600);
-  pinMode(LED_BUILTIN, OUTPUT);
+#define RED_LED_PIN 1
+#define GREEN_LED_PIN 2
+#define TRIG_PIN 13
+#define ECHO_PIN 14
+
+Led redLed(RED_LED_PIN);
+Led greenLed(GREEN_LED_PIN);
+Sonar sonar(TRIG_PIN, ECHO_PIN);
+
+void setup()
+{
+  Serial.begin(115200);
 }
 
-void loop() {
-  Serial.println("Working...");
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(100);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(100);
+void loop()
+{ 
+  redLed.switchOn();
+  greenLed.switchOff();
+  delay(500);
+  redLed.switchOff();
+  greenLed.switchOn();
+  Serial.println(sonar.getDistance());
+  delay(500);
 }
