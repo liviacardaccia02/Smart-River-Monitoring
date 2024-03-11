@@ -1,28 +1,56 @@
 #include <Arduino.h>
-#include <Sonar.h>
-#include <Led.h>
+#include <Wire.h>
+#include <PubSubClient.h>
+#include <WiFi.h>
 
-#define RED_LED_PIN 1
-#define GREEN_LED_PIN 2
-#define TRIG_PIN 13
-#define ECHO_PIN 14
+#define WIFI_TIMEOUT 20000
+#define WIFI_SSID "SSID" // Replace with your own SSID
+#define WIFI_PASSWORD "PASSWORD"   // Replace with your own password
 
-Led redLed(RED_LED_PIN);
-Led greenLed(GREEN_LED_PIN);
-Sonar sonar(TRIG_PIN, ECHO_PIN);
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void connectToWifi()
+{
+  Serial.println("Connecting to WiFi...");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+  unsigned long startAttemptTime = millis();
+
+  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
+  {
+    Serial.print(".");
+    delay(100);
+  }
+
+  if (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println("Failed to connect to WiFi.");
+    Serial.println("Restarting in 10 seconds...");
+    delay(10000);
+    ESP.restart();
+  }
+  else
+  {
+    Serial.println("Connected to WiFi.");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+  }
+}
 
 void setup()
 {
   Serial.begin(115200);
+  pinMode(LED_BUILTIN, OUTPUT);
+  connectToWifi();
 }
 
 void loop()
-{ 
-  redLed.switchOn();
-  greenLed.switchOff();
+{
+  // Just a test
+  digitalWrite(LED_BUILTIN, HIGH);
   delay(500);
-  redLed.switchOff();
-  greenLed.switchOn();
-  Serial.println(sonar.getDistance());
+  digitalWrite(LED_BUILTIN, LOW);
   delay(500);
 }
