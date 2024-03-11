@@ -33,18 +33,12 @@ void SystemManager::displayMode()
 
 void SystemManager::updateManual()
 {
-    //Get gate opening info from potentiometer
     int gateLevel = pot->getPercent();
 
-    //Display gate level on diplay
-    //TODO display mode? where
     if(gateLevel != prevLevel){
         updateBoard(gateLevel);
     }
-
     prevLevel = gateLevel;
-
-    //Update servo
 
     //Communicate with application
     //TODO
