@@ -17,6 +17,7 @@ public:
     void displayOn();
     void displayOff();
     void displayClear();
+    void clearLine(int line);
     void WriteOnLine(String msg, int line);
 };
 
