@@ -6,6 +6,7 @@
 #include <LCD.h>
 #include <Potentiometer.h>
 #include <ServoMotor.h>
+#include <MessageHandler.h>
 
 #define AUTOMATIC 0
 #define MANUAL 1
@@ -17,11 +18,11 @@ private:
     LCD *lcdDisplay;
     Potentiometer *pot;
     ServoMotor *servo;
+    MessageHandler *msgHandler;
     int mode;
     int prevLevel;
     void updateBoard(int gateLevel);
     void displayMode();
-    int getValveValue();
 public:
     SystemManager(int buttonPin, int potPin, int servoPin);
     int checkMode();
