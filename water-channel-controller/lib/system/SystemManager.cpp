@@ -2,12 +2,15 @@
 
 SystemManager::SystemManager(int buttonPin, int potPin, int servoPin)
 {
+    Serial.begin(9600);
     button = new Button(buttonPin);
     pot = new Potentiometer(potPin);
     servo = new ServoMotor(servoPin);
     lcdDisplay = new LCD();
+    msgHandler = new MessageHandler();
     prevLevel = 0;
-    mode = MANUAL; //Modify to change the starting mode
+    mode = AUTOMATIC; //Modify to change the starting mode
+    updateBoard(prevLevel);
 }
 
 void SystemManager::updateBoard(int gateLevel)
@@ -34,7 +37,7 @@ void SystemManager::displayMode()
 void SystemManager::updateManual()
 {
     int gateLevel = pot->getPercent();
-
+    
     if(gateLevel != prevLevel){
         updateBoard(gateLevel);
     }
@@ -46,7 +49,16 @@ void SystemManager::updateManual()
 
 void SystemManager::updateAutomatic()
 {
-    //Communication with application
+    //check for serial input
+    int msgValue = msgHandler->getValue();
+
+    if((msgValue != prevLevel) && (msgValue != -1))
+    {
+        updateBoard(msgValue);
+        prevLevel = msgValue;
+    }
+
+    //if value is updated 
 }
 
 int SystemManager::checkMode()
