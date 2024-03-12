@@ -2,6 +2,7 @@
 
 SystemManager::SystemManager(int buttonPin, int potPin, int servoPin)
 {
+    Serial.begin(9600);
     button = new Button(buttonPin);
     pot = new Potentiometer(potPin);
     servo = new ServoMotor(servoPin);
@@ -47,6 +48,15 @@ void SystemManager::updateManual()
 void SystemManager::updateAutomatic()
 {
     //Communication with application
+    int gateLevel = getValveValue();
+}
+
+int SystemManager::getValveValue()
+{
+    //Read valve value from serialLine
+    int value = 1;
+
+    return value;
 }
 
 int SystemManager::checkMode()

@@ -21,6 +21,7 @@ private:
     int prevLevel;
     void updateBoard(int gateLevel);
     void displayMode();
+    int getValveValue();
 public:
     SystemManager(int buttonPin, int potPin, int servoPin);
     int checkMode();
