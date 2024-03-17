@@ -3,6 +3,7 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 #include <Sonar.h>
+#include <Led.h>
 
 #define MSG_BUFFER_SIZE (500)
 #define WIFI_TIMEOUT 20000
@@ -16,7 +17,9 @@
 
 WiFiClient espClient;
 PubSubClient client(espClient);
-Sonar* sonar;
+Sonar *sonar;
+Led *redLed;
+Led *greenLed;
 
 const char *mqtt_broker = "broker.hivemq.com";
 const char *topic = "WaterLevel";
@@ -45,8 +48,8 @@ void connectToWifi()
 
   if (WiFi.status() != WL_CONNECTED)
   {
-    digitalWrite(RED_LED_PIN, HIGH);
-    digitalWrite(GREEN_LED_PIN, LOW); // disconnesso
+    redLed->switchOn();
+    greenLed->switchOff(); // disconnesso
     Serial.println("Failed to connect to WiFi.");
     Serial.println("Restarting in 5 seconds...");
     delay(5000);
@@ -54,8 +57,8 @@ void connectToWifi()
   }
   else
   {
-    digitalWrite(RED_LED_PIN, LOW);
-    digitalWrite(GREEN_LED_PIN, HIGH); // connesso
+    redLed->switchOff();
+    greenLed->switchOn(); // connesso
     Serial.println("Connected to WiFi.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
@@ -73,14 +76,15 @@ void reconnect()
 
     if (client.connect(clientID.c_str(), mqtt_username, mqtt_password))
     {
-      digitalWrite(RED_LED_PIN, LOW);
-      digitalWrite(GREEN_LED_PIN, HIGH); // mqtt okay
+      redLed->switchOff();
+      greenLed->switchOn(); // mqtt ok
       Serial.println("Connected to MQTT");
+      client.subscribe(topic);
     }
     else
     {
-      digitalWrite(RED_LED_PIN, HIGH);
-      digitalWrite(GREEN_LED_PIN, LOW); // mqtt not okay
+      redLed->switchOn();
+      greenLed->switchOff(); // mqtt ko
       Serial.println("Failed, code = ");
       Serial.println(client.state());
       Serial.println("Try again in 5 seconds");
@@ -104,39 +108,46 @@ void callback(char *topic, byte *payload, unsigned int length)
 void setup()
 {
   Serial.begin(115200);
-  pinMode(RED_LED_PIN, OUTPUT);
-  pinMode(GREEN_LED_PIN, OUTPUT);
+
+  sonar = new Sonar(TRIG_PIN, ECHO_PIN);
+  redLed = new Led(RED_LED_PIN);
+  greenLed = new Led(GREEN_LED_PIN);
+
   connectToWifi();
-  client.setServer(mqtt_broker, mqtt_port); 
+
+  client.setServer(mqtt_broker, mqtt_port);
   client.setCallback(callback);
 }
 
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED)
+  delay(500);
+
+  while (WiFi.status() != WL_CONNECTED)
   {
-    digitalWrite(RED_LED_PIN, HIGH);
-    digitalWrite(GREEN_LED_PIN, LOW);
+    redLed->switchOn();
+    greenLed->switchOff();
     Serial.println("WiFi connection lost. Reconnecting...");
-    connectToWifi();
   }
 
   if (!client.connected())
   {
-    digitalWrite(RED_LED_PIN, HIGH);
-    digitalWrite(GREEN_LED_PIN, LOW);
+    redLed->switchOn();
+    greenLed->switchOff();
     Serial.println("MQTT connection lost. Reconnecting...");
     reconnect();
   }
 
   unsigned long currentTime = millis();
 
-  if (currentTime - lastPublishTime >= 1000) {  
-    // Publishing every 1000 milliseconds (1 second)
-    // TODO: add code to read the distance from the sensor
+  if (currentTime - lastPublishTime >= 1000)
+  {
+    value = sonar->getDistance();
 
-    Serial.println("Publishing distance...");
-    
+    String strValue = String(value);
+
+    client.publish(topic, strValue.c_str());
+
     lastPublishTime = currentTime;
   }
 
