@@ -6,7 +6,7 @@
 #include <Led.h>
 
 #define MSG_BUFFER_SIZE (500)
-#define WIFI_TIMEOUT 20000
+#define WIFI_TIMEOUT 10000
 #define WIFI_SSID "Livia’s iPhone" // Replace with your own SSID
 #define WIFI_PASSWORD "kitty123"   // Replace with your own password
 
@@ -33,7 +33,7 @@ int value = 0;
 
 void connectToWifi()
 {
-  delay(200);
+  delay(1000);
   Serial.println("Connecting to WiFi...");
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -49,23 +49,23 @@ void connectToWifi()
   if (WiFi.status() != WL_CONNECTED)
   {
     redLed->switchOn();
-    greenLed->switchOff(); // disconnesso
+    greenLed->switchOff(); // disconnected
     Serial.println("Failed to connect to WiFi.");
-    Serial.println("Restarting in 5 seconds...");
+    Serial.println("Trying again in 5 seconds...");
     delay(5000);
-    ESP.restart(); // TODO: add a counter to restart only after a certain number of attempts
+    connectToWifi();
   }
   else
   {
     redLed->switchOff();
-    greenLed->switchOn(); // connesso
+    greenLed->switchOn(); // connected
     Serial.println("Connected to WiFi.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
   }
 }
 
-void reconnect()
+void connectToMQTT()
 {
   while (!client.connected())
   {
@@ -79,15 +79,14 @@ void reconnect()
       redLed->switchOff();
       greenLed->switchOn(); // mqtt ok
       Serial.println("Connected to MQTT");
-      client.subscribe(topic);
     }
     else
     {
       redLed->switchOn();
       greenLed->switchOff(); // mqtt ko
-      Serial.println("Failed, code = ");
+      Serial.println("Failed to connect to MQTT.");
       Serial.println(client.state());
-      Serial.println("Try again in 5 seconds");
+      Serial.println("Trying again in 5 seconds...");
       delay(5000);
     }
   }
@@ -95,9 +94,9 @@ void reconnect()
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  Serial.print("Messaggio ricevuto su topic: ");
+  Serial.print("Message received on topic: ");
   Serial.println(topic);
-  Serial.print("Contenuto: ");
+  Serial.print("Content: ");
   for (int i = 0; i < length; i++)
   {
     Serial.print((char)payload[i]);
@@ -127,15 +126,14 @@ void loop()
   {
     redLed->switchOn();
     greenLed->switchOff();
-    Serial.println("WiFi connection lost. Reconnecting...");
+    connectToWifi();
   }
 
   if (!client.connected())
   {
     redLed->switchOn();
     greenLed->switchOff();
-    Serial.println("MQTT connection lost. Reconnecting...");
-    reconnect();
+    connectToMQTT();
   }
 
   unsigned long currentTime = millis();
