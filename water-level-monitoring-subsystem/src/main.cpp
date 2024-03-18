@@ -5,10 +5,8 @@
 #include <Sonar.h>
 #include <Led.h>
 
-#define MSG_BUFFER_SIZE (500)
+#define MSG_BUFFER_SIZE 50
 #define WIFI_TIMEOUT 10000
-#define WIFI_SSID "Livia’s iPhone" // Replace with your own SSID
-#define WIFI_PASSWORD "kitty123"   // Replace with your own password
 
 #define RED_LED_PIN 1
 #define GREEN_LED_PIN 2
@@ -17,6 +15,7 @@
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+
 Sonar *sonar;
 Led *redLed;
 Led *greenLed;
@@ -27,23 +26,28 @@ const char *mqtt_username = "liviacardaccia";
 const char *mqtt_password = "public";
 const int mqtt_port = 1883;
 
+const char *ssid = "Livia’s iPhone"; // Replace with your own SSID
+const char *password = "kitty123";   // Replace with your own password
+
 unsigned long lastPublishTime = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
 
 void connectToWifi()
 {
-  delay(1000);
+  delay(100);
+
   Serial.println("Connecting to WiFi...");
+
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(ssid, password);
 
   unsigned long startAttemptTime = millis();
 
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
   {
+    delay(500);
     Serial.print(".");
-    delay(100);
   }
 
   if (WiFi.status() != WL_CONNECTED)
@@ -53,12 +57,13 @@ void connectToWifi()
     Serial.println("Failed to connect to WiFi.");
     Serial.println("Trying again in 5 seconds...");
     delay(5000);
-    connectToWifi();
+    connectToWifi(); // TODO - check if this is a good idea
   }
   else
   {
     redLed->switchOff();
     greenLed->switchOn(); // connected
+    Serial.println("");
     Serial.println("Connected to WiFi.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
@@ -69,7 +74,7 @@ void connectToMQTT()
 {
   while (!client.connected())
   {
-    Serial.println("Connecting to MQTT...\n");
+    Serial.println("Connecting to MQTT...");
 
     String clientID = "ESP32Client-";
     clientID += String(random(0xffff), HEX);
@@ -107,13 +112,11 @@ void callback(char *topic, byte *payload, unsigned int length)
 void setup()
 {
   Serial.begin(115200);
-
   sonar = new Sonar(TRIG_PIN, ECHO_PIN);
   redLed = new Led(RED_LED_PIN);
   greenLed = new Led(GREEN_LED_PIN);
-
   connectToWifi();
-
+  randomSeed(micros());
   client.setServer(mqtt_broker, mqtt_port);
   client.setCallback(callback);
 }
@@ -135,6 +138,7 @@ void loop()
     greenLed->switchOff();
     connectToMQTT();
   }
+  client.loop();
 
   unsigned long currentTime = millis();
 
@@ -148,7 +152,4 @@ void loop()
 
     lastPublishTime = currentTime;
   }
-
-  client.loop();
-  delay(1000);
 }
