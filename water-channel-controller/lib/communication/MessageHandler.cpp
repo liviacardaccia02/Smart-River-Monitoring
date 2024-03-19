@@ -10,32 +10,18 @@ String MessageHandler::getMessage()
     return msg;
 }
 
-int MessageHandler::getValue()
+int MessageHandler::getValue(String msg)
 {
-    if(Serial.available())
-    {
-        String msg = this->getMessage();
-        if(msg.indexOf(VALUE_PREFIX) >= 0)
-        {
-            msg.remove(0,3);
-            Serial.println("Received: " + msg);
-            return msg.toInt();
-        }
-    }
-
-    return -1; //Returns negative value if there is no message incoming
+    msg.remove(0,3);
+    return msg.toInt();
 }
 
-int MessageHandler::getType()
+String MessageHandler::getType(String msg)
 {
-    //TODO
-    String msg = this->getMessage();
-    if(msg.indexOf(MODE_PREFIX) >= 0)
-    {
-        msg.remove(0,3);
-        Serial.println("Received mode: " + msg);
-        return msg.toInt();
-    }
-    
-    return -1;
+    return msg.substring(0,3);
+}
+
+void MessageHandler::sendMode(int mode)
+{
+    Serial.println(MODE_PREFIX + String(mode));
 }

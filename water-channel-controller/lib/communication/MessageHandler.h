@@ -16,8 +16,9 @@ private:
     
 public:
     String getMessage();
-    int getValue();
-    int getType();
+    int getValue(String msg);
+    String getType(String msg);
+    void sendMode(int mode);
 };
 
 #endif
