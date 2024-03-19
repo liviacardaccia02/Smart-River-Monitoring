@@ -14,7 +14,7 @@ void setup() {
 }
 
 void loop() {
-  currentMode = man->checkMode();
+  currentMode = man->checkButton();
 
   if(currentMode == AUTOMATIC)
   {
