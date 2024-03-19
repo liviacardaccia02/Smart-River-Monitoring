@@ -25,7 +25,9 @@ private:
     void displayMode();
 public:
     SystemManager(int buttonPin, int potPin, int servoPin);
-    int checkMode();
+    int checkButton();
+    void changeMode();
+    void changeMode(int newMode);
     void updateManual();
     void updateAutomatic();
 };

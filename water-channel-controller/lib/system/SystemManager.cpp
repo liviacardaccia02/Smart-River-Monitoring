@@ -50,30 +50,68 @@ void SystemManager::updateManual()
 void SystemManager::updateAutomatic()
 {
     //check for serial input
-    int msgValue = msgHandler->getValue();
+    //TODO FIX gets two different messages!!
+    String msg = msgHandler->getMessage();
+    String msgType = msgHandler->getType(msg);
+    int msgValue = msgHandler->getValue(msg);
 
-    if((msgValue != prevLevel) && (msgValue != -1))
+    if(msgType == MODE_PREFIX)
     {
-        updateBoard(msgValue);
-        prevLevel = msgValue;
+        changeMode(msgValue);
+        Serial.println(msgType + " " + (String)msgValue);
     }
+    else if(msgType == VALUE_PREFIX)
+    {
+        if((msgValue != prevLevel) && (msgValue != -1))
+        {
+            updateBoard(msgValue);
+            prevLevel = msgValue;
+            Serial.println(msgType + " " + (String)msgValue);
+        }
+    }
+
+
 
     //if value is updated 
 }
 
-int SystemManager::checkMode()
+int SystemManager::checkButton()
 {
     if(button->isPressed())
     {
-        if(mode == AUTOMATIC)
-        {
-            mode = MANUAL;
-        }
-        else
-        {
-            mode = AUTOMATIC;
-        }
+        changeMode();
     }
 
     return mode;
+}
+
+void SystemManager::changeMode()
+{
+    if(mode == AUTOMATIC)
+    {
+        mode = MANUAL;
+        msgHandler->sendMode(MANUAL);
+    }
+    else if(mode == MANUAL)
+    {
+        mode = AUTOMATIC;
+        msgHandler->sendMode(AUTOMATIC);
+    }
+}
+
+void SystemManager::changeMode(int newMode)
+{
+    if(newMode != mode)
+    {
+        if(newMode == AUTOMATIC)
+        {
+            mode = AUTOMATIC;
+            msgHandler->sendMode(AUTOMATIC);
+        }
+        else if(newMode == MANUAL)
+        {
+            mode = MANUAL;
+            msgHandler->sendMode(MANUAL);
+        }
+    }
 }
