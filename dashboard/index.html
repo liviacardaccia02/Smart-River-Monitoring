@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Water Level Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <canvas id="waterChart"></canvas>
+
+    <script>
+      // Function to fetch data from the server
+      function fetchData() {
+        fetch("http://localhost:8000/test", {
+          method: "GET",
+          mode: "cors",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+        })
+          .then((response) => response.json())
+          .then((data) => {
+
+            const currentTime = new Date(data.date);
+            var options = {
+              year: "numeric",
+              month: "numeric",
+              day: "numeric",
+              hour: "numeric",
+              minute: "numeric",
+              second: "numeric",
+            };
+            const formattedDate = currentTime.toLocaleDateString(
+              "en-US",
+              options
+            );
+            waterLevelData.datasets[0].data.push(data.waterLevel);
+            waterLevelData.labels.push(formattedDate);
+            chart.update();
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      // Sample data for water level over time
+      const waterLevelData = {
+        labels: [],
+        datasets: [
+          {
+            label: "Water Level",
+            data: [],
+            backgroundColor: "rgba(54, 162, 235, 0.2)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      // Create a chart using Chart.js
+      const ctx = document.getElementById("waterChart").getContext("2d");
+      const chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: waterLevelData.labels,
+          datasets: [
+            {
+              label: "Water Level",
+              data: waterLevelData.datasets[0].data,
+              backgroundColor: "rgba(54, 162, 235, 0.2)",
+              borderColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 1,
+              borderWidth: 2,
+              tension: 0.5,
+            },
+          ],
+        },
+      });
+
+      // Fetch data every 15 seconds
+      setInterval(fetchData, 1000);
+    </script>
+  </body>
+</html>
