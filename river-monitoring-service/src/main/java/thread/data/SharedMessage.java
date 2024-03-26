@@ -1,6 +1,6 @@
 package thread.data;
 
-public class MessaggioCondiviso {
+public class SharedMessage {
     private String messaggio;
 
     public synchronized String getMessaggio() {
