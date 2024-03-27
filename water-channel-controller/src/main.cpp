@@ -25,5 +25,5 @@ void loop() {
     man->updateManual();
   }
   
-  delay(50);//Makes the lcd stop flickering
+  delay(100);//Makes the lcd stop flickering
 }

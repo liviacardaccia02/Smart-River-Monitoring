@@ -3,8 +3,10 @@
 
 #include <Arduino.h>
 
+
 #define VALUE_PREFIX "VAL"
 #define MODE_PREFIX "MOD"
+#define DASH_PREFIX "DAS"
 #define MSG_VAL 0
 #define MSG_MOD 1
 #define MODE_AUTOMATIC 0
