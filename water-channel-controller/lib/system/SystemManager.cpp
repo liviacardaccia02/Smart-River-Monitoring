@@ -36,21 +36,26 @@ void SystemManager::displayMode()
 
 void SystemManager::updateManual()
 {
+    String msg = msgHandler->getMessage();
+    String msgType = msgHandler->getType(msg);
+    int msgValue = msgHandler->getValue(msg);
     int gateLevel = pot->getPercent();
+
+    if(msgType == MODE_PREFIX)
+    {
+        changeMode(msgValue);
+    }
+
     
     if(gateLevel != prevLevel){
         updateBoard(gateLevel);
     }
     prevLevel = gateLevel;
-
-    //Communicate with application
-    //TODO
 }
 
 void SystemManager::updateAutomatic()
 {
     //check for serial input
-    //TODO FIX gets two different messages!!
     String msg = msgHandler->getMessage();
     String msgType = msgHandler->getType(msg);
     int msgValue = msgHandler->getValue(msg);
@@ -58,15 +63,13 @@ void SystemManager::updateAutomatic()
     if(msgType == MODE_PREFIX)
     {
         changeMode(msgValue);
-        Serial.println(msgType + " " + (String)msgValue);
     }
     else if(msgType == VALUE_PREFIX)
     {
-        if((msgValue != prevLevel) && (msgValue != -1))
+        if((msgValue != prevLevel) && (msgValue > -1))
         {
             updateBoard(msgValue);
             prevLevel = msgValue;
-            Serial.println(msgType + " " + (String)msgValue);
         }
     }
 
@@ -97,6 +100,8 @@ void SystemManager::changeMode()
         mode = AUTOMATIC;
         msgHandler->sendMode(AUTOMATIC);
     }
+    
+    displayMode();
 }
 
 void SystemManager::changeMode(int newMode)
