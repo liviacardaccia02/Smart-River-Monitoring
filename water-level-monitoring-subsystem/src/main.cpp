@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <Sonar.h>
 #include <Led.h>
+#include <MQTTManager.h>
 
 #define MSG_BUFFER_SIZE 50
 #define WIFI_TIMEOUT 10000
@@ -19,6 +20,7 @@ PubSubClient client(espClient);
 Sonar *sonar;
 Led *redLed;
 Led *greenLed;
+MQTTManager *mqttManager;
 
 const char *mqtt_broker = "broker.hivemq.com";
 const char *topic = "WaterLevel";
@@ -64,33 +66,6 @@ void connectToWifi()
   }
 }
 
-void connectToMQTT()
-{
-  while (!client.connected())
-  {
-    Serial.println("Connecting to MQTT...");
-
-    String clientID = "ESP32Client-";
-    clientID += String(random(0xffff), HEX);
-
-    if (client.connect(clientID.c_str(), mqtt_username, mqtt_password))
-    {
-      redLed->switchOff();
-      greenLed->switchOn(); // mqtt ok
-      Serial.println("Connected to MQTT");
-    }
-    else
-    {
-      redLed->switchOn();
-      greenLed->switchOff(); // mqtt ko
-      Serial.println("Failed to connect to MQTT.");
-      Serial.println(client.state());
-      Serial.println("Trying again in 5 seconds...");
-      delay(5000);
-    }
-  }
-}
-
 void callback(char *topic, byte *payload, unsigned int length)
 {
   Serial.print("Message received on topic: ");
@@ -109,7 +84,10 @@ void setup()
   sonar = new Sonar(TRIG_PIN, ECHO_PIN);
   redLed = new Led(RED_LED_PIN);
   greenLed = new Led(GREEN_LED_PIN);
+  mqttManager = new MQTTManager(mqtt_broker, mqtt_port, mqtt_username,
+                                mqtt_password, &espClient, redLed, greenLed);
   connectToWifi();
+  mqttManager->connect();
   randomSeed(micros());
   client.setServer(mqtt_broker, mqtt_port);
   client.setCallback(callback);
@@ -126,13 +104,7 @@ void loop()
     connectToWifi();
   }
 
-  if (!client.connected())
-  {
-    redLed->switchOn();
-    greenLed->switchOff();
-    connectToMQTT();
-  }
-  client.loop();
+  mqttManager->checkConnection();
 
   unsigned long currentTime = millis();
 
@@ -142,7 +114,7 @@ void loop()
 
     String strValue = String(value);
 
-    client.publish(topic, strValue.c_str());
+    mqttManager->publish(topic, strValue.c_str());
 
     lastPublishTime = currentTime;
   }
