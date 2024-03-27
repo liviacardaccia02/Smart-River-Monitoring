@@ -7,25 +7,11 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
-    <style>
-      * {
-        font-family: Arial, sans-serif;
-      }
-      .error-notification {
-        display: none;
-        background-color: #ff0000;
-        color: #ffffff;
-        padding: 5px 10px;
-        border-radius: 5px;
-        align-items: center;
-      }
-
-      .error-notification i {
-        margin-right: 5px;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="switch.css" />
   </head>
   <body>
+    <span class="danger-level">Danger Level: <span class="level"></span></span>
     <canvas id="waterChart"></canvas>
 
     <div id="errorNotification" class="error-notification">
@@ -33,7 +19,25 @@
       <p>The device is disconnected</p>
     </div>
 
+    <p>Mode:</p>
+    <label class="switch" id="mode">
+      <input type="checkbox" />
+      <span class="slider round"></span>
+    </label>
+
+    <div class="slidecontainer">
+      <input
+        type="range"
+        min="1"
+        max="100"
+        class=""
+        id="valve-opening"
+        disabled
+      />
+    </div>
+
     <script>
+      const xhr = new XMLHttpRequest();
       var frequency = 1000;
       var interval;
       // Function to fetch data from the server
@@ -48,6 +52,10 @@
           .then((response) => response.json())
           .then((data) => {
             frequency = data.frequency;
+            document.querySelector(".level").textContent = data.dangerLevel;
+            document.querySelector(".level").classList =
+              "level " + data.dangerLevel;
+            document.getElementById("valve-opening").value = data.valve;
             console.log(frequency);
             const currentTime = new Date(data.date);
             var options = {
@@ -160,6 +168,24 @@
 
       // Fetch data every 15 seconds
       fetchData();
+
+      document.getElementById("mode").addEventListener("click", function () {
+        xhr.open("POST", "http://localhost:8000/test");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        const body = JSON.stringify({
+          mode: document.querySelector("#mode input").checked
+            ? "auto"
+            : "manual",
+        });
+        xhr.onload = () => {
+          if (xhr.readyState == 4 && xhr.status == 201) {
+            console.log(JSON.parse(xhr.responseText));
+          } else {
+            console.log(`Error: ${xhr.status}`);
+          }
+        };
+        xhr.send(body);
+      });
     </script>
   </body>
 </html>

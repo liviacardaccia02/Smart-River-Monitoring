@@ -5,15 +5,16 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mqtt.MqttClient;
 import thread.data.SharedMessage;
+import utils.Pair;
 
 /*
  * MQTT Agent
  */
 public class MQTTAgent extends AbstractVerticle {
-    private final SharedMessage sharedMessage;
+    private final SharedMessage<Pair<String, Long>> sharedMessage;
     MqttClient mqttClient;
 
-    public MQTTAgent(SharedMessage sharedMessage) {
+    public MQTTAgent(SharedMessage<Pair<String, Long>> sharedMessage) {
         this.sharedMessage = sharedMessage;
     }
 
@@ -29,10 +30,12 @@ public class MQTTAgent extends AbstractVerticle {
                 System.out.println("Connected to MQTT server");
                 // Subscribe to a topic
                 mqttClient.publishHandler(s -> {
-                    //System.out.println(s.payload().toString());
+                    System.out.println(s.payload().toString());
                     synchronized (sharedMessage) {
-                        sharedMessage.setMessaggio(s.payload().toString());
-                        System.out.println("Messaggio scritto: " + sharedMessage.getMessaggio());
+                        sharedMessage.setMessage(new Pair<>(s.payload().toString(), System.currentTimeMillis()));
+                        System.out.println("Messaggio scritto: " +
+                                sharedMessage.getMessage().getFirst() + " " +
+                                sharedMessage.getMessage().getSecond());
                     }
                 }).subscribe("WaterLevel", MqttQoS.AT_LEAST_ONCE.value(), handler -> {
                     if (handler.succeeded()) {

@@ -1,0 +1,35 @@
+* {
+    font-family: Arial, sans-serif;
+  }
+  .error-notification {
+    display: none;
+    background-color: #ff0000;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    align-items: center;
+  }
+
+  .error-notification i {
+    margin-right: 5px;
+  }
+
+  .danger-level .level.ALARM-TOO-LOW {
+    color: #ff0000;
+  }
+
+.danger-level .level.NORMAL {
+    color: #00FF00;
+}
+
+.danger-level .level.PRE-ALARM-TOO-HIGH {
+    color: #ff9900;
+}
+
+.danger-level .level.ALARM-TOO-HIGH {
+    color: #ff0000;
+}
+
+.danger-level .level.ALARM-TOO-HIGH-CRITIC {
+    color: #ff0000;
+}
