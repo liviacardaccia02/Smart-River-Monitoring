@@ -37,36 +37,30 @@ void connectToWifi()
 {
   delay(100);
 
-  Serial.println("Connecting to WiFi...");
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-
-  unsigned long startAttemptTime = millis();
-
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT)
+  while (WiFi.status() != WL_CONNECTED)
   {
-    delay(500);
-    Serial.print(".");
-  }
+    Serial.println("Connecting to WiFi...");
 
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    redLed->switchOn();
-    greenLed->switchOff(); // disconnected
-    Serial.println("Failed to connect to WiFi.");
-    Serial.println("Trying again in 5 seconds...");
-    delay(5000);
-    connectToWifi(); // TODO - check if this is a good idea
-  }
-  else
-  {
-    redLed->switchOff();
-    greenLed->switchOn(); // connected
-    Serial.println("");
-    Serial.println("Connected to WiFi.");
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+      redLed->switchOn();
+      greenLed->switchOff(); // disconnected
+      Serial.println("Failed to connect to WiFi.");
+      Serial.println("Trying again in 5 seconds...");
+      delay(5000);
+    }
+    else
+    {
+      redLed->switchOff();
+      greenLed->switchOn(); // connected
+      Serial.println("");
+      Serial.println("Connected to WiFi.");
+      Serial.println("IP address: ");
+      Serial.println(WiFi.localIP());
+    }
   }
 }
 
@@ -125,7 +119,7 @@ void loop()
 {
   delay(500);
 
-  while (WiFi.status() != WL_CONNECTED)
+  if (WiFi.status() != WL_CONNECTED)
   {
     redLed->switchOn();
     greenLed->switchOff();
