@@ -5,9 +5,9 @@
 #include <Sonar.h>
 #include <Led.h>
 #include <MQTTManager.h>
+#include <WiFiManager.h>
 
 #define MSG_BUFFER_SIZE 50
-#define WIFI_TIMEOUT 10000
 
 #define RED_LED_PIN 1
 #define GREEN_LED_PIN 2
@@ -21,6 +21,7 @@ Sonar *sonar;
 Led *redLed;
 Led *greenLed;
 MQTTManager *mqttManager;
+WiFiManager *wifiManager;
 
 const char *mqtt_broker = "broker.hivemq.com";
 const char *topic = "WaterLevel";
@@ -59,7 +60,6 @@ void connectToWifi()
       redLed->switchOff();
       greenLed->switchOn(); // connected
       Serial.println("");
-      Serial.println("Connected to WiFi.");
       Serial.println("IP address: ");
       Serial.println(WiFi.localIP());
     }
@@ -86,23 +86,17 @@ void setup()
   greenLed = new Led(GREEN_LED_PIN);
   mqttManager = new MQTTManager(mqtt_broker, mqtt_port, mqtt_username,
                                 mqtt_password, &espClient, redLed, greenLed);
-  connectToWifi();
+  wifiManager = new WiFiManager(ssid, password, redLed, greenLed);
+  wifiManager->connect();
   mqttManager->connect();
   randomSeed(micros());
-  client.setServer(mqtt_broker, mqtt_port);
-  client.setCallback(callback);
 }
 
 void loop()
 {
   delay(500);
 
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    redLed->switchOn();
-    greenLed->switchOff();
-    connectToWifi();
-  }
+  wifiManager->checkConnection();
 
   mqttManager->checkConnection();
 
