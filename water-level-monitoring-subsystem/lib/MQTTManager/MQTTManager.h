@@ -8,21 +8,23 @@
 class MQTTManager
 {
 public:
-    MQTTManager(const char *mqtt_broker, int mqtt_port, const char *mqtt_username,
-                const char *mqtt_password, WiFiClient *espClient, Led *redLed, Led *greenLed);
+    MQTTManager(const char *mqttBroker, int mqttPort, const char *mqttUsername,
+                const char *mqttPassword, WiFiClient *espClient, Led *redLed, Led *greenLed);
     void connect();
     void publish(const char *topic, const char *message);
+    void subscribe(const char *topic);
     void checkConnection();
+    static void callback(char *topic, byte *payload, unsigned int length);
 
 private:
     WiFiClient espClient;
     PubSubClient client;
     Led *redLed;
     Led *greenLed;
-    const char *mqtt_broker;
-    int mqtt_port;
-    const char *mqtt_username;
-    const char *mqtt_password;
+    const char *mqttBroker;
+    int mqttPort;
+    const char *mqttUsername;
+    const char *mqttPassword;
 };
 
 #endif

@@ -1,17 +1,18 @@
 #include "MQTTManager.h"
 
-MQTTManager::MQTTManager(const char *mqtt_broker, int mqtt_port, const char *mqtt_username,
-                         const char *mqtt_password, WiFiClient *espClient, Led *redLed, Led *greenLed)
+MQTTManager::MQTTManager(const char *mqttBroker, int mqttPort, const char *mqttUsername,
+                         const char *mqttPassword, WiFiClient *espClient, Led *redLed, Led *greenLed)
 {
-    this->mqtt_broker = mqtt_broker;
-    this->mqtt_port = mqtt_port;
-    this->mqtt_username = mqtt_username;
-    this->mqtt_password = mqtt_password;
+    this->mqttBroker = mqttBroker;
+    this->mqttPort = mqttPort;
+    this->mqttUsername = mqttUsername;
+    this->mqttPassword = mqttPassword;
     this->redLed = redLed;
     this->greenLed = greenLed;
 
-    client.setServer(mqtt_broker, mqtt_port);
+    client.setServer(mqttBroker, mqttPort);
     client.setClient(*espClient);
+    client.setCallback(callback);
 }
 
 void MQTTManager::connect()
@@ -23,7 +24,7 @@ void MQTTManager::connect()
         String clientID = "ESP32Client-";
         clientID += String(random(0xffff), HEX);
 
-        if (client.connect(clientID.c_str(), mqtt_username, mqtt_password))
+        if (client.connect(clientID.c_str(), mqttUsername, mqttPassword))
         {
             redLed->switchOff();
             greenLed->switchOn(); // mqtt ok
@@ -46,6 +47,11 @@ void MQTTManager::publish(const char *topic, const char *message)
     client.publish(topic, message);
 }
 
+void MQTTManager::subscribe(const char *topic)
+{
+    client.subscribe(topic);
+}
+
 void MQTTManager::checkConnection()
 {
     if (!client.connected())
@@ -54,4 +60,16 @@ void MQTTManager::checkConnection()
         greenLed->switchOff();
         this->connect();
     }
+}
+
+void MQTTManager::callback(char *topic, byte *payload, unsigned int length)
+{
+    Serial.print("Message arrived [");
+    Serial.print(topic);
+    Serial.print("] ");
+    for (int i = 0; i < length; i++)
+    {
+        Serial.print((char)payload[i]);
+    }
+    Serial.println();
 }

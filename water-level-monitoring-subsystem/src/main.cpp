@@ -8,6 +8,8 @@
 #include <WiFiManager.h>
 
 #define MSG_BUFFER_SIZE 50
+#define NORMAL_FREQUENCY 5000
+#define HIGH_FREQUENCY 2000
 
 #define RED_LED_PIN 1
 #define GREEN_LED_PIN 2
@@ -23,60 +25,19 @@ Led *greenLed;
 MQTTManager *mqttManager;
 WiFiManager *wifiManager;
 
-const char *mqtt_broker = "broker.hivemq.com";
-const char *topic = "WaterLevel";
-const char *mqtt_username = "liviacardaccia";
-const char *mqtt_password = "public";
-const int mqtt_port = 1883;
+const char *mqttBroker = "broker.hivemq.com";
+const char *waterLevelTopic = "WaterLevelMonitoring";
+const char *frequencyTopic = "FrequencyMonitoring";
+const char *mqttUsername = "liviacardaccia";
+const char *mqttPassword = "public";
+const int mqttPort = 1883;
 
-const char *ssid = "Livia’s iPhone"; // Replace with your own SSID
-const char *password = "kitty123";   // Replace with your own password
+const char *ssid = "Redmi 10"; // Replace with your own SSID
+const char *password = "11111111";   // Replace with your own password
 
 unsigned long lastPublishTime = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
-
-void connectToWifi()
-{
-  delay(100);
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.println("Connecting to WiFi...");
-
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-
-    if (WiFi.status() != WL_CONNECTED)
-    {
-      redLed->switchOn();
-      greenLed->switchOff(); // disconnected
-      Serial.println("Failed to connect to WiFi.");
-      Serial.println("Trying again in 5 seconds...");
-      delay(5000);
-    }
-    else
-    {
-      redLed->switchOff();
-      greenLed->switchOn(); // connected
-      Serial.println("");
-      Serial.println("IP address: ");
-      Serial.println(WiFi.localIP());
-    }
-  }
-}
-
-void callback(char *topic, byte *payload, unsigned int length)
-{
-  Serial.print("Message received on topic: ");
-  Serial.println(topic);
-  Serial.print("Content: ");
-  for (int i = 0; i < length; i++)
-  {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-}
 
 void setup()
 {
@@ -84,11 +45,12 @@ void setup()
   sonar = new Sonar(TRIG_PIN, ECHO_PIN);
   redLed = new Led(RED_LED_PIN);
   greenLed = new Led(GREEN_LED_PIN);
-  mqttManager = new MQTTManager(mqtt_broker, mqtt_port, mqtt_username,
-                                mqtt_password, &espClient, redLed, greenLed);
+  mqttManager = new MQTTManager(mqttBroker, mqttPort, mqttUsername,
+                                mqttPassword, &espClient, redLed, greenLed);
   wifiManager = new WiFiManager(ssid, password, redLed, greenLed);
   wifiManager->connect();
   mqttManager->connect();
+  mqttManager->subscribe(frequencyTopic);
   randomSeed(micros());
 }
 
@@ -108,7 +70,7 @@ void loop()
 
     String strValue = String(value);
 
-    mqttManager->publish(topic, strValue.c_str());
+    mqttManager->publish(waterLevelTopic, strValue.c_str());
 
     lastPublishTime = currentTime;
   }
