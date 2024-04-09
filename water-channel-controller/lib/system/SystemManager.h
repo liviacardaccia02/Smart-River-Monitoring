@@ -21,6 +21,7 @@ private:
     MessageHandler *msgHandler;
     int mode;
     int prevLevel;
+    int prevLevelPot;
     void updateBoard(int gateLevel);
     void displayMode();
 public:
