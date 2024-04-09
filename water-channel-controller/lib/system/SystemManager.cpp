@@ -58,9 +58,8 @@ void SystemManager::updateManual()
     {
         prevLevelPot = potValue;
         updateBoard(potValue);
+        msgHandler->sendValue(potValue);
     }
-
-    
 }
 
 void SystemManager::updateAutomatic()

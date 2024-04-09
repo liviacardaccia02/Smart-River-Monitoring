@@ -25,3 +25,8 @@ void MessageHandler::sendMode(int mode)
 {
     Serial.println(MODE_PREFIX + String(mode));
 }
+
+void MessageHandler::sendValue(int value)
+{
+    Serial.println(VALUE_PREFIX + String(value));
+}

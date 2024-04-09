@@ -21,6 +21,7 @@ public:
     int getValue(String msg);
     String getType(String msg);
     void sendMode(int mode);
+    void sendValue(int value);
 };
 
 #endif
