@@ -1,14 +1,20 @@
 package thread.data;
 
-public class SharedMessage {
-    private String messaggio;
+public class SharedMessage<T> {
+    private T message;
 
-    public synchronized String getMessaggio() {
-        return messaggio;
+    public SharedMessage() {
+    }
+    public SharedMessage(T aDefault) {
+        this.message = aDefault;
     }
 
-    public synchronized void setMessaggio(String messaggio) {
-        this.messaggio = messaggio;
-        notifyAll(); // Notifica tutti i thread in attesa sul messaggio
+    public synchronized T getMessage() {
+        return message;
+    }
+
+    public synchronized void setMessage(T message) {
+        this.message = message;
+        notifyAll();
     }
 }
