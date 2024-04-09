@@ -1,7 +1,11 @@
 package thread.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SharedMessage<T> {
     private T message;
+    private final List<MessageChangeListener<T>> listeners = new ArrayList<>();
 
     public SharedMessage() {
     }
@@ -15,6 +19,21 @@ public class SharedMessage<T> {
 
     public synchronized void setMessage(T message) {
         this.message = message;
+        notifyFrequencyChange(message);
         notifyAll();
+    }
+
+    public void addFrequencyChangeListener(MessageChangeListener<T> listener) {
+        listeners.add(listener);
+    }
+
+    public void removeFrequencyChangeListener(MessageChangeListener<T> listener) {
+        listeners.remove(listener);
+    }
+
+    private void notifyFrequencyChange(T newMessage) {
+        for (MessageChangeListener<T> listener : listeners) {
+            listener.onMessageChange(newMessage);
+        }
     }
 }
