@@ -9,6 +9,7 @@ SystemManager::SystemManager(int buttonPin, int potPin, int servoPin)
     lcdDisplay = new LCD();
     msgHandler = new MessageHandler();
     prevLevel = 0;
+    prevLevelPot = 0;
     mode = AUTOMATIC; //Modify to change the starting mode
     updateBoard(prevLevel);
 }
@@ -39,18 +40,27 @@ void SystemManager::updateManual()
     String msg = msgHandler->getMessage();
     String msgType = msgHandler->getType(msg);
     int msgValue = msgHandler->getValue(msg);
-    int gateLevel = pot->getPercent();
+    int potValue = pot->getPercent();
 
     if(msgType == MODE_PREFIX)
     {
         changeMode(msgValue);
     }
+    else if(msgType == VALUE_PREFIX)
+    {
+        if(msgValue != prevLevel)
+        {
+            prevLevel = msgValue;
+            updateBoard(msgValue);
+        }
+    }
+    else if(potValue != prevLevelPot)
+    {
+        prevLevelPot = potValue;
+        updateBoard(potValue);
+    }
 
     
-    if(gateLevel != prevLevel){
-        updateBoard(gateLevel);
-    }
-    prevLevel = gateLevel;
 }
 
 void SystemManager::updateAutomatic()
