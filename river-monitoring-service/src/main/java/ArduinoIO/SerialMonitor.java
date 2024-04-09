@@ -4,11 +4,40 @@ import jssc.SerialPort;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
+import thread.data.SharedMessage;
+import utils.Logger;
 
 public class SerialMonitor implements SerialPortEventListener {
+    private final SharedMessage<String> mode;
+    private final SharedMessage<Integer> valve;
     SerialPort serialPort;
 
     String receivedData = "";
+
+    public SerialMonitor(SharedMessage<String> mode, SharedMessage<Integer> valve) {
+        this.mode = mode;
+        this.valve = valve;
+
+        this.valve.addFrequencyChangeListener(valveOpening -> {
+            try {
+                if (this.serialPort.isOpened()){
+                    serialPort.writeString("VAL"+valveOpening.toString());
+                }
+            } catch (SerialPortException e) {
+                e.printStackTrace();
+            }
+        });
+
+        this.mode.addFrequencyChangeListener(newMode -> {
+            try {
+                if (this.serialPort.isOpened()){
+                    serialPort.writeString("MOD"+(newMode.equals("{\"mode\":\"auto\"}") ? 0: 1));
+                }
+            } catch (SerialPortException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     public void start(String portName) {
         serialPort = new SerialPort(portName);
@@ -25,7 +54,7 @@ public class SerialMonitor implements SerialPortEventListener {
 
             serialPort.addEventListener(this, SerialPort.MASK_RXCHAR);
         } catch (SerialPortException ex) {
-            System.out.println("There is an error on writing string to port т: " + ex);
+            Logger.error("There is an error on writing string to port т: " + ex);
         }
     }
 
@@ -41,7 +70,7 @@ public class SerialMonitor implements SerialPortEventListener {
     }
 
     private void processData(String receivedData) {
-
+        Logger.info("Message from controller: "+receivedData);
     }
 
     /**
@@ -58,7 +87,7 @@ public class SerialMonitor implements SerialPortEventListener {
                     receivedData = receivedData.substring(receivedData.indexOf("\n") + 1);
                 }
             } catch (SerialPortException ex) {
-                System.out.println("Error in receiving string from COM-port: " + ex);
+                Logger.error("Error in receiving string from COM-port: " + ex);
             }
         }
     }
