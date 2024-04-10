@@ -12,7 +12,6 @@ MQTTManager::MQTTManager(const char *mqttBroker, int mqttPort, const char *mqttU
 
     client.setServer(mqttBroker, mqttPort);
     client.setClient(*espClient);
-    client.setCallback(callback);
 }
 
 void MQTTManager::connect()
@@ -47,8 +46,9 @@ void MQTTManager::publish(const char *topic, const char *message)
     client.publish(topic, message);
 }
 
-void MQTTManager::subscribe(const char *topic)
+void MQTTManager::subscribe(const char *topic, std::function<void(char*, uint8_t*, unsigned int)> callback)
 {
+    client.setCallback(callback);
     client.subscribe(topic);
 }
 
@@ -62,14 +62,6 @@ void MQTTManager::checkConnection()
     }
 }
 
-void MQTTManager::callback(char *topic, byte *payload, unsigned int length)
-{
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
-    for (int i = 0; i < length; i++)
-    {
-        Serial.print((char)payload[i]);
-    }
-    Serial.println();
+void MQTTManager::update() {
+    client.loop();
 }

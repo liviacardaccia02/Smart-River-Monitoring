@@ -10,6 +10,7 @@
 #define MSG_BUFFER_SIZE 50
 #define NORMAL_FREQUENCY 5000
 #define HIGH_FREQUENCY 2000
+#define THRESHOLD 200
 
 #define RED_LED_PIN 1
 #define GREEN_LED_PIN 2
@@ -17,7 +18,6 @@
 #define ECHO_PIN 14
 
 WiFiClient espClient;
-PubSubClient client(espClient);
 
 Sonar *sonar;
 Led *redLed;
@@ -32,12 +32,33 @@ const char *mqttUsername = "liviacardaccia";
 const char *mqttPassword = "public";
 const int mqttPort = 1883;
 
-const char *ssid = "Redmi 10"; // Replace with your own SSID
-const char *password = "11111111";   // Replace with your own password
+const char *ssid = "iPhone di Livia"; // Replace with your own SSID
+const char *password = "kitty123";    // Replace with your own password
 
 unsigned long lastPublishTime = 0;
 char msg[MSG_BUFFER_SIZE];
 int value = 0;
+int frequency;
+
+void callback(char *topic, u_int8_t *payload, unsigned int length)
+{
+  Serial.print("Message arrived on topic [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  for (int i = 0; i < length; i++)
+  {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  if (strcmp(topic, frequencyTopic) == 0)
+  {
+    char str[(sizeof(payload)) + 1];
+    memcpy(str, payload, sizeof(payload));
+    str[sizeof(payload)] = 0;
+    frequency = atoi(str);
+  }
+}
 
 void setup()
 {
@@ -48,9 +69,10 @@ void setup()
   mqttManager = new MQTTManager(mqttBroker, mqttPort, mqttUsername,
                                 mqttPassword, &espClient, redLed, greenLed);
   wifiManager = new WiFiManager(ssid, password, redLed, greenLed);
+  frequency = NORMAL_FREQUENCY;
   wifiManager->connect();
   mqttManager->connect();
-  mqttManager->subscribe(frequencyTopic);
+  mqttManager->subscribe(frequencyTopic, callback);
   randomSeed(micros());
 }
 
@@ -58,20 +80,21 @@ void loop()
 {
   delay(500);
 
+  mqttManager->update();
   wifiManager->checkConnection();
-
   mqttManager->checkConnection();
 
   unsigned long currentTime = millis();
 
-  if (currentTime - lastPublishTime >= 1000)
+  if (currentTime - lastPublishTime >= frequency)
   {
     value = sonar->getDistance();
-
-    String strValue = String(value);
-
+    if (value > THRESHOLD)
+    {
+      value = THRESHOLD;
+    }
+    String strValue = String(THRESHOLD - value);
     mqttManager->publish(waterLevelTopic, strValue.c_str());
-
     lastPublishTime = currentTime;
   }
 }

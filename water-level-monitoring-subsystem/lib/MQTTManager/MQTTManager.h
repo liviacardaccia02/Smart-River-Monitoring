@@ -12,9 +12,9 @@ public:
                 const char *mqttPassword, WiFiClient *espClient, Led *redLed, Led *greenLed);
     void connect();
     void publish(const char *topic, const char *message);
-    void subscribe(const char *topic);
+    void subscribe(const char *topic, std::function<void(char*, uint8_t*, unsigned int)> callback);
     void checkConnection();
-    static void callback(char *topic, byte *payload, unsigned int length);
+    void update();
 
 private:
     WiFiClient espClient;
@@ -22,9 +22,9 @@ private:
     Led *redLed;
     Led *greenLed;
     const char *mqttBroker;
-    int mqttPort;
     const char *mqttUsername;
     const char *mqttPassword;
+    int mqttPort;
 };
 
 #endif
