@@ -11,29 +11,29 @@
     <link rel="stylesheet" href="switch.css" />
   </head>
   <body>
-    <span class="danger-level">Danger Level: <span class="level"></span></span>
-    <canvas id="waterChart"></canvas>
-
-    <div id="errorNotification" class="error-notification">
-      <i class="fas fa-exclamation-circle"></i>
-      <p>The device is disconnected</p>
-    </div>
-
-    <p>Mode:</p>
-    <label class="switch" id="mode">
-      <input type="checkbox" />
-      <span class="slider round"></span>
-    </label>
-
-    <div class="slidecontainer">
-      <input
-        type="range"
-        min="1"
-        max="100"
-        class=""
-        id="valve-opening"
-        disabled
-      />
+   
+    <canvas id="waterChart" width="800px"></canvas>
+    <div class="info">
+      <span class="danger-level">Danger Level: <span class="level"></span></span>
+      <div id="errorNotification" class="error-notification">
+        <i class="fas fa-exclamation-circle"></i>
+        <p>The device is disconnected</p>
+      </div>
+      <p>Mode:</p>
+      <label class="switch" id="mode">
+        <input type="checkbox" />
+        <span class="slider round"></span>
+      </label>
+      <div class="slidecontainer">
+        <input
+          type="range"
+          min="1"
+          max="96"
+          class=""
+          id="valve-opening"
+          disabled
+        />
+      </div>
     </div>
 
     <script>
@@ -52,11 +52,11 @@
           .then((response) => response.json())
           .then((data) => {
             frequency = data.frequency;
+            mode = data.mode.mode;
             document.querySelector(".level").textContent = data.dangerLevel;
             document.querySelector(".level").classList =
               "level " + data.dangerLevel;
             document.getElementById("valve-opening").value = data.valve;
-            console.log(frequency);
             const currentTime = new Date(data.date);
             var options = {
               year: "numeric",
@@ -71,6 +71,14 @@
               options
             );
 
+            if (mode == "auto") {
+              document.querySelector("#mode input").checked = false;
+              document.getElementById("valve-opening").disabled = true;
+            } else {
+              document.querySelector("#mode input").checked = true;
+              document.getElementById("valve-opening").disabled = false;
+            }
+
             if (waterLevelData.labels.lastIndexOf(formattedDate) !== -1) {
               document.getElementById("errorNotification").style.display =
                 "flex"; // Set the display property to "flex" to make the error notification visible
@@ -81,7 +89,6 @@
               document.getElementById("errorNotification").style.display ==
               "flex"
             ) {
-              console.log("Device is connected");
               document.getElementById("errorNotification").style.display =
                 "none";
             }
@@ -112,6 +119,7 @@
                 ],
               },
               options: {
+                responsive: true,
                 animation: {
                   duration: 0,
                 },
@@ -170,15 +178,18 @@
       fetchData();
 
       document.getElementById("mode").addEventListener("click", function () {
+        document.querySelector("#mode input").checked
+        ? (document.getElementById("valve-opening").disabled = false)
+        : (document.getElementById("valve-opening").disabled = true);
         xhr.open("POST", "http://localhost:8000/test");
         xhr.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
         const body = JSON.stringify({
           mode: document.querySelector("#mode input").checked
-            ? "auto"
-            : "manual",
+          ? "manual"
+          : "auto",
         });
         xhr.onload = () => {
-          if (xhr.readyState == 4 && xhr.status == 201) {
+          if (xhr.readyState == 4 && xhr.status == 200) {
             console.log(JSON.parse(xhr.responseText));
           } else {
             console.log(`Error: ${xhr.status}`);
@@ -186,6 +197,27 @@
         };
         xhr.send(body);
       });
+
+      document
+        .getElementById("valve-opening")
+        .addEventListener("input", function () {
+          if (document.querySelector("#mode input").checked) {
+            xhr.open("POST", "http://localhost:8000/valve");
+            xhr.setRequestHeader(
+              "Content-Type",
+              "application/json; charset=UTF-8"
+            );
+            const body = document.getElementById("valve-opening").value
+            xhr.onload = () => {
+              if (xhr.readyState == 4 && xhr.status == 200) {
+                console.log(JSON.parse(xhr.responseText));
+              } else {
+                console.log(`Error: ${xhr.status}`);
+              }
+            };
+            xhr.send(body);
+          }
+        });
     </script>
   </body>
 </html>
