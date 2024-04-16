@@ -21,7 +21,8 @@ public class SerialMonitor implements SerialPortEventListener {
         this.valve.addFrequencyChangeListener(valveOpening -> {
             try {
                 if (this.serialPort.isOpened()){
-                    serialPort.writeString("VAL"+valveOpening.toString());
+                    serialPort.writeString("VAL"+valveOpening.toString()+"\n");
+                    Logger.success("Valve opening set to: "+valveOpening);
                 }
             } catch (SerialPortException e) {
                 e.printStackTrace();
@@ -31,7 +32,8 @@ public class SerialMonitor implements SerialPortEventListener {
         this.mode.addFrequencyChangeListener(newMode -> {
             try {
                 if (this.serialPort.isOpened()){
-                    serialPort.writeString("MOD"+(newMode.equals("{\"mode\":\"auto\"}") ? 0: 1));
+                    serialPort.writeString("MOD"+(newMode.equals("{\"mode\":\"auto\"}") ? 0: 1)+"\n");
+                    Logger.success("mode changed in arduino "+"MOD"+(newMode.equals("{\"mode\":\"auto\"}") ? 0: 1));
                 }
             } catch (SerialPortException e) {
                 e.printStackTrace();
@@ -56,6 +58,8 @@ public class SerialMonitor implements SerialPortEventListener {
         } catch (SerialPortException ex) {
             Logger.error("There is an error on writing string to port т: " + ex);
         }
+
+        Logger.success("Serial port opened");
     }
 
     public synchronized void close() {
@@ -70,7 +74,13 @@ public class SerialMonitor implements SerialPortEventListener {
     }
 
     private void processData(String receivedData) {
+
         Logger.info("Message from controller: "+receivedData);
+        if(receivedData.contains("VAL")){
+            valve.setMessage(Integer.parseInt(receivedData.substring(3, receivedData.length()-1)));
+        } else if (receivedData.contains("MOA")){
+            mode.setMessage("{\"mode\":"+(receivedData.substring(3, receivedData.length()-1).equals("0") ? "\"auto\"": "\"manual\"")+"}");
+        }
     }
 
     /**

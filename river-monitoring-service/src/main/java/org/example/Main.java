@@ -11,15 +11,14 @@ import utils.Logger;
 import utils.Pair;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-
-
     public static void main(String[] args) throws IOException {
         SharedMessage<Pair<String, Long>> waterLevel = new SharedMessage<>(new Pair<>("0", System.currentTimeMillis()));
-        final SharedMessage<String> mode = new SharedMessage<>();
+        SharedMessage<String> mode = new SharedMessage<>("{\"mode\":\"auto\"}");
         SharedMessage<String> dangerLevel = new SharedMessage<>("default");
         SharedMessage<Integer> valve = new SharedMessage<>();
         SharedMessage<Integer> frequency = new SharedMessage<>(5000);
@@ -27,22 +26,17 @@ public class Main {
         HttpServer httpServer = new HttpServer(waterLevel, mode, dangerLevel, valve, frequency);
         Vertx vertx = Vertx.vertx(new VertxOptions().setMaxEventLoopExecuteTime(Long.MAX_VALUE));
         MQTTAgent agent = new MQTTAgent(waterLevel, frequency);
-
-        Monitor monitor = new Monitor(waterLevel, dangerLevel, valve, List.of(50, 70, 80, 100), frequency);
-
+        Monitor monitor = new Monitor(waterLevel, dangerLevel, valve, Arrays.asList(170, 175, 180, 195), frequency, mode);
         SerialMonitor serialMonitor = new SerialMonitor(mode, valve);
 
         serialMonitor.start("/dev/cu.usbmodem14101");
-
-
-
-        try {
-            deployMqttAgent(vertx, agent);
-        } catch (Exception e) {
-            Logger.error("Failed to deploy MQTT agent");
-        }
+        deployMqttAgent(vertx, agent);
         httpServer.start();
-        monitor.run();
+        try {
+            TimeUnit.SECONDS.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void deployMqttAgent(Vertx vertx, MQTTAgent agent) {
@@ -50,20 +44,15 @@ public class Main {
             if (ar.succeeded()) {
                 while (!agent.isConnected()) {
                     try {
-                        TimeUnit.SECONDS.sleep(1);
+                        Thread.sleep(1000);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 }
-
                 Logger.success("MQTT agent deployed");
             } else {
                 Logger.error("Failed to deploy MQTT agent");
             }
         });
-
     }
-
-
-
 }

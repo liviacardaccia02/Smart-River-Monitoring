@@ -19,7 +19,7 @@ public class SharedMessage<T> {
 
     public synchronized void setMessage(T message) {
         this.message = message;
-        notifyFrequencyChange(message);
+        notifyMessageChange(message);
         notifyAll();
     }
 
@@ -31,7 +31,7 @@ public class SharedMessage<T> {
         listeners.remove(listener);
     }
 
-    private void notifyFrequencyChange(T newMessage) {
+    private void notifyMessageChange(T newMessage) {
         for (MessageChangeListener<T> listener : listeners) {
             listener.onMessageChange(newMessage);
         }
