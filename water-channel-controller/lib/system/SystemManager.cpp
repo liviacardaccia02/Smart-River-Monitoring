@@ -42,7 +42,7 @@ void SystemManager::updateManual()
     int msgValue = msgHandler->getValue(msg);
     int potValue = pot->getPercent();
 
-    if(msgType == MODE_PREFIX)
+    if(msgType == MODE_IN_PREFIX)
     {
         changeMode(msgValue);
     }
@@ -69,7 +69,7 @@ void SystemManager::updateAutomatic()
     String msgType = msgHandler->getType(msg);
     int msgValue = msgHandler->getValue(msg);
 
-    if(msgType == MODE_PREFIX)
+    if(msgType == MODE_IN_PREFIX)
     {
         changeMode(msgValue);
     }

@@ -23,7 +23,7 @@ String MessageHandler::getType(String msg)
 
 void MessageHandler::sendMode(int mode)
 {
-    Serial.println(MODE_PREFIX + String(mode));
+    Serial.println(MODE_OUT_PREFIX + String(mode));
 }
 
 void MessageHandler::sendValue(int value)

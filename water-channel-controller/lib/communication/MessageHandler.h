@@ -5,7 +5,8 @@
 
 
 #define VALUE_PREFIX "VAL"
-#define MODE_PREFIX "MOD"
+#define MODE_IN_PREFIX "MOD"
+#define MODE_OUT_PREFIX "MOA"
 #define DASH_PREFIX "DAS"
 #define MSG_VAL 0
 #define MSG_MOD 1
