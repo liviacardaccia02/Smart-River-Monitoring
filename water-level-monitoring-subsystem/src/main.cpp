@@ -32,8 +32,8 @@ const char *mqttUsername = "liviacardaccia";
 const char *mqttPassword = "public";
 const int mqttPort = 1883;
 
-const char *ssid = "iPhone di Livia"; // Replace with your own SSID
-const char *password = "kitty123";    // Replace with your own password
+const char *ssid = "YourSSID"; // Replace with your own SSID
+const char *password = "YourPassword";    // Replace with your own password
 
 unsigned long lastPublishTime = 0;
 char msg[MSG_BUFFER_SIZE];
