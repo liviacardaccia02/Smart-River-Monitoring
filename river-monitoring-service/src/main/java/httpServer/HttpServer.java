@@ -47,7 +47,8 @@ public class HttpServer {
                                         + ",\"date\":" + (waterLevel.getMessage().getSecond() == null ? "0" : waterLevel.getMessage().getSecond())
                                         + ",\"dangerLevel\":\"" + (dangerLevel.getMessage() == null ? "disconnected" : dangerLevel.getMessage()) + "\""
                                         + ",\"valve\":" + (valve.getMessage() == null ? 0 : valve.getMessage())
-                                        + ", \"freq\":" + (frequency.getMessage() == null ? 5000 : frequency.getMessage()) + "}";
+                                        + ", \"freq\":" + (frequency.getMessage() == null ? 5000 : frequency.getMessage())
+                                        + ", \"mode\":" + (mode.getMessage() == null ? "{\"mode\":\"auto\"}" : mode.getMessage()) + "}";
                                 sendResponse(t, data);
                             }
                         }

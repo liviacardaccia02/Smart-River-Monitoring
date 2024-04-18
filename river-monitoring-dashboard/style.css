@@ -1,6 +1,14 @@
 * {
     font-family: Arial, sans-serif;
   }
+body {
+  display: flex;
+}
+
+canvas {
+  max-width: 60%
+}
+
   .error-notification {
     display: none;
     background-color: #ff0000;

@@ -10,7 +10,7 @@ public class Logger {
 
 
     public static void info(String message) {
-        System.out.println(ANSI_CYAN + "[*] " + message + ANSI_RESET);
+        System.out.println("\t" + ANSI_CYAN + "[*] " + message + ANSI_RESET);
     }
 
     public static void error(String message) {
